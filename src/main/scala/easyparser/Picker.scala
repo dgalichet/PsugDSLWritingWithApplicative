@@ -1,5 +1,7 @@
 package easyparser
 
+import scala.xml.{Elem, NodeSeq, XML}
+
 /**
  * @author David Galichet.
  */
@@ -14,5 +16,16 @@ object CsvPicker {
       val elems = s.trim.split(separator)
       if (i > 0 && elems.size > i) Success(elems(i).trim)
       else Failure(s"No column ${i} for ${s}")
+  }
+}
+
+object XmlPicker {
+  def apply[T](query: Elem => NodeSeq): Picker = Picker { s: String =>
+    try {
+      val xml = XML.loadString(s)
+      Success(query(xml).text)
+    } catch {
+      case e: Exception => Failure(e.getMessage)
+    }
   }
 }

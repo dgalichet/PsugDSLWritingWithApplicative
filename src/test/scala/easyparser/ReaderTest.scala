@@ -44,6 +44,7 @@ class ReaderTest extends Specification {
       (r1 and r2)(Person).apply("test") === Success(Person("Test", "Test"))
     }
   }
+
+  case class Person(firstname: String, lastname: String)
 }
 
-case class Person(firstname: String, lastname: String)
