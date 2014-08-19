@@ -14,6 +14,9 @@ class CsvPickerTest extends Specification {
   import Converter.string2StringConverter
   import Converter.string2DateConverter
 
+  import play.api.libs.functional.syntax._
+  import Reader.readerIsAnApplicative
+
   "A CsvPicker" should {
     "be able to fetch a String in a CSV line" in {
       CsvPicker(1).as[String].apply("foo; bar") === Success("bar")
@@ -31,7 +34,7 @@ class CsvPickerTest extends Specification {
       val reader = (
         CsvPicker(1).as[String] and
         CsvPicker(2).as[Date]
-      ).reduce { case (n, d) => FutureEvent(n, d) }
+      )(FutureEvent)
       reader("foo;bar;12/10/2014") === Success(FutureEvent("bar", dtFormatter.parse("12/10/2014")))
     }
   }
