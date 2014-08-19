@@ -21,4 +21,6 @@ case class Reader[O](p: String => Result[O]) {
       case f: Failure => f
     }
   }
+
+  def reduce[T] = map[T] _ // alias for map
 }

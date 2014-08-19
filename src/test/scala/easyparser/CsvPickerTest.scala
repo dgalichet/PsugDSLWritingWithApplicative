@@ -27,5 +27,14 @@ class CsvPickerTest extends Specification {
     "is unable to parse column as expected" in {
       CsvPicker(2).as[Date].apply("foo;bar;Wrong date") === Failure("Unable to format 'Wrong date' as Date")
     }
+    "is able to combine two Pickers" in {
+      val reader = (
+        CsvPicker(1).as[String] and
+        CsvPicker(2).as[Date]
+      ).reduce { case (n, d) => FutureEvent(n, d) }
+      reader("foo;bar;12/10/2014") === Success(FutureEvent("bar", dtFormatter.parse("12/10/2014")))
+    }
   }
 }
+
+case class FutureEvent(name: String, dt: Date)

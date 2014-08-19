@@ -32,5 +32,12 @@ class ReaderTest extends Specification {
       val r: Reader[String] = Reader { s => Success(s) }
       r.map(_.toUpperCase)("test") === Success("TEST")
     }
+    "Have a reduce alias" in {
+      val r1: Reader[String] = Reader { s => Success(s.capitalize) }
+      val r2: Reader[String] = Reader { s => Success(s.capitalize) }
+      (r1 and r2).reduce { case (f, l) => Person(f, l) }.apply("test") === Success(Person("Test", "Test"))
+    }
   }
 }
+
+case class Person(firstname: String, lastname: String)
