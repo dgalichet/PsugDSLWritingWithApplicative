@@ -5,23 +5,24 @@ import java.util.Date
 
 import org.specs2.mutable.Specification
 
+import scala.xml.XML
+
 /**
  * @author David Galichet.
  */
 class XmlPickerTest extends Specification {
   import play.api.libs.functional.syntax._
-  import Reader.readerIsAnApplicative
+  import Reader._
 
   implicit val dtFormatter = new SimpleDateFormat("dd/MM/yyyy")
-  import Converter.string2StringConverter
-  import Converter.string2DateConverter
+  import Converter._
 
-  val xml = """
+  val xml = XML.loadString("""
   <company name="Dupont and Co">
     <owner>
       <person firstname="jean" lastname="dupont" birthdate="11/03/1987"/>
     </owner>
-  </company>"""
+  </company>""")
 
   "A XML Picker" should {
     "be able to read XML content" in {

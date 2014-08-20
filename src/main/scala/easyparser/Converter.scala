@@ -6,17 +6,17 @@ import java.util.Date
 /**
  * @author David Galichet.
  */
-trait Converter[T] {
-  def convert(p: String => Result[String]): Reader[T]
+trait Converter[I, T] {
+  def convert(p: I => Result[String]): Reader[I, T]
 }
 
 object Converter {
-  implicit val string2StringConverter = new Converter[String] {
-    override def convert(p: (String) => Result[String]) = Reader[String](p)
+  implicit def stringConverter[I] = new Converter[I, String] {
+    override def convert(p: I => Result[String]) = Reader[I, String](p)
   }
 
-  implicit val string2IntConverter = new Converter[Int] {
-    override def convert(p: (String) => Result[String]) = Reader[Int] { s: String =>
+  implicit def intConverter[I] = new Converter[I, Int] {
+    override def convert(p: I => Result[String]) = Reader[I, Int] { s: I =>
       p(s) match {
         case Success(t) => try {
           Success(t.toInt)
@@ -28,8 +28,8 @@ object Converter {
     }
   }
 
-  implicit def string2DateConverter(implicit dtFormat: DateFormat) = new Converter[Date] {
-    override def convert(p: (String) => Result[String]) = Reader[Date] { s: String =>
+  implicit def dateConverter[I](implicit dtFormat: DateFormat) = new Converter[I, Date] {
+    override def convert(p: I => Result[String]) = Reader[I, Date] { s: I =>
       p(s) match {
         case Success(dt) => try {
           Success(dtFormat.parse(dt))

@@ -1,29 +1,27 @@
 package easyparser
 
-import scala.xml.{Elem, NodeSeq, XML}
+import scala.xml.{Elem, NodeSeq}
 
 /**
  * @author David Galichet.
  */
-case class Picker(p: String => Result[String]) {
+case class Picker[I](p: I => Result[String]) {
 
-  def as[T](implicit c: Converter[T]): Reader[T] = c.convert(p)
+  def as[T](implicit c: Converter[I, T]): Reader[I, T] = c.convert(p)
 
 }
 
 object CsvPicker {
-  def apply[T](i: Int)(implicit separator: Char): Picker = Picker { s: String =>
-      val elems = s.trim.split(separator)
+  def apply[T](i: Int): Picker[List[String]] = Picker { elems: List[String] =>
       if (i > 0 && elems.size > i) Success(elems(i).trim)
-      else Failure(s"No column ${i} for ${s}")
+      else Failure(s"No column ${i} found in ${elems.mkString(";")}")
   }
 }
 
 object XmlPicker {
-  def apply[T](query: Elem => NodeSeq): Picker = Picker { s: String =>
+  def apply[T](query: Elem => NodeSeq): Picker[Elem] = Picker { elem: Elem =>
     try {
-      val xml = XML.loadString(s)
-      Success(query(xml).text)
+      Success(query(elem).text)
     } catch {
       case e: Exception => Failure(e.getMessage)
     }
