@@ -17,7 +17,15 @@ case class Reader[I, O](p: I => Result[O]) {
     }
   }
 
-  def reduce[T] = map[T] _ // alias for map
+  def flatMap[T](f: O => Reader[I, T]): Reader[I, T] = Reader { s: I =>
+    p(s) match {
+      case Success(o) => f(o)(s)
+      case f: Failure => f
+    }
+  }
+
+  def verify(f: O => Result[O]): Reader[I, O] = flatMap { o: O => Reader( _ => f(o)) }
+
 }
 
 object Reader {
@@ -45,7 +53,7 @@ object Reader {
 
   import scala.language.implicitConversions
 
-  // Here we help the compiler a bit. Thanks @skaalf (Julien Tournay) and https://github.com/jto/validation
+  // Here we help the compiler a bit. Thanks @skaalf (Julien Tournay) and https://github.com/jto/validation for the trick
   implicit def fcbReads[I]: FunctionalCanBuild[({type λ[A] = Reader[I, A]})#λ] = functionalCanBuildApplicative[({type λ[A] = Reader[I, A]})#λ]
 
   implicit def fboReads[I, A](a: Reader[I, A])(implicit fcb: FunctionalCanBuild[({type λ[x] = Reader[I, x]})#λ]) = new FunctionalBuilderOps[({type λ[x] = Reader[I, x]})#λ, A](a)(fcb)

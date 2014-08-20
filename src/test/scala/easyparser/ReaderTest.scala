@@ -44,6 +44,34 @@ class ReaderTest extends Specification {
       (r1 and r2)(Person).apply("test") === Success(Person("Test", "Test"))
     }
   }
+  "Reader flatMap" should {
+    "Return a failure if entry failed" in {
+      val r: Reader[String, String] = Reader { _ => Failure("Error") }
+      r.flatMap(_ => Reader(_ => Success("OK")))("test") === Failure("Error")
+    }
+    "Return a failure if function do a failure" in {
+      val r: Reader[String, String] = Reader { Success(_) }
+      r.flatMap(_ => Reader[String, String](_ => Failure("Error")))("test") === Failure("Error")
+    }
+    "Return a success if both entry and functions returns a success" in {
+      val r: Reader[String, String] = Reader { Success(_) }
+      r.flatMap(_ => Reader[String, String]( s => Success(s.capitalize)) )("test") === Success("Test")
+    }
+  }
+  "Reader verify" should {
+    "Return a failure if entry Reader failed" in {
+      val r: Reader[String, String] = Reader { s => Failure("Error") }
+      r.verify(Success(_))("test") === Failure("Error")
+    }
+    "Return a failure if verify method failed" in {
+      val r: Reader[String, String] = Reader { Success(_) }
+      r.verify { x =>  if (x == "OK") Success(x) else Failure("KO") }("Bad entry") === Failure("KO")
+    }
+    "Return a success if verify method succeed" in {
+      val r: Reader[String, String] = Reader { Success(_) }
+      r.verify { x =>  if (x == "OK") Success(x) else Failure("KO") }("OK") === Success("OK")
+    }
+  }
 
   case class Person(firstname: String, lastname: String)
 }
